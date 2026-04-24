@@ -3,88 +3,274 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>成长小宠物</title>
+<title>成长小宠物 · 豪华版</title>
 
 <style>
     body {
-        font-family: "Comic Sans MS", sans-serif;
-        background: #FFF6E5;
+        font-family: "Comic Sans MS", "Microsoft YaHei", sans-serif;
+        background: linear-gradient(#FFF6E5, #FFE4C4);
         text-align: center;
         padding: 20px;
+        min-height: 100vh;
     }
 
     h1 {
         color: #FF6600;
-        font-size: 30px;
+        font-size: 36px;
+        text-shadow: 2px 2px #FFF;
     }
 
-    .pet {
-        font-size: 100px;
+    /* 宠物展示区 */
+    .pet-area {
+        font-size: 120px;
         margin: 20px;
+        min-height: 150px;
     }
 
-    button {
-        font-size: 24px;
-        padding: 15px;
-        margin: 10px;
-        border-radius: 20px;
-        border: none;
-        background: #FFD580;
-    }
-
-    .bar {
-        width: 80%;
-        height: 30px;
+    /* 状态条 */
+    .stat-bar {
+        width: 85%;
+        height: 35px;
         background: #DDD;
-        border-radius: 15px;
-        margin: 15px auto;
+        border-radius: 18px;
+        margin: 12px auto;
+        overflow: hidden;
+        box-shadow: inset 0 2px 5px rgba(0,0,0,0.2);
     }
 
-    .fill {
+    .stat-fill {
         height: 100%;
-        border-radius: 15px;
-        background: linear-gradient(90deg,#FFB347,#FFCC33);
+        border-radius: 18px;
+        transition: width 0.5s ease-in-out;
     }
+
+    #food-fill { background: linear-gradient(90deg, #FF6347, #FF4500); } /* 橙色-食物 */
+    #mood-fill { background: linear-gradient(90deg, #FFB6C1, #FF69B4); } /* 粉色-心情 */
+    #clean-fill { background: linear-gradient(90deg, #87CEFA, #00BFFF); } /* 蓝色-清洁 */
+
+    .stat-label {
+        font-size: 20px;
+        font-weight: bold;
+        color: #555;
+        margin-top: 5px;
+    }
+
+    /* 任务卡片区 */
+    .tasks-area {
+        display: flex;
+        justify-content: center;
+        gap: 15px;
+        flex-wrap: wrap;
+        margin: 30px 0;
+    }
+
+    .task-card {
+        background: #FFF;
+        border: 3px solid #FFD580;
+        border-radius: 20px;
+        padding: 15px;
+        width: 140px;
+        cursor: pointer;
+        transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+    .task-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    }
+
+    .task-icon {
+        font-size: 40px;
+    }
+
+    .task-text {
+        font-size: 16px;
+        margin-top: 8px;
+        color: #333;
+    }
+
+    /* 图鉴区 */
+    .dex-area {
+        margin-top: 30px;
+        background: rgba(255,255,255,0.5);
+        border-radius: 20px;
+        padding: 15px;
+    }
+
+    .dex-title {
+        font-size: 24px;
+        color: #8B4513;
+    }
+
+    .pets-dex {
+        display: flex;
+        justify-content: center;
+        gap: 20px;
+        font-size: 50px;
+        margin-top: 10px;
+    }
+
+    .pet-icon {
+        opacity: 0.2; /* 未解锁的灰色 */
+        filter: grayscale(100%);
+        transition: all 0.5s;
+    }
+
+    .pet-icon.unlocked {
+        opacity: 1;
+        filter: grayscale(0%);
+    }
+
 </style>
 </head>
 
 <body>
 
-<h1>🌟 成长小宠物 🌟</h1>
+<h1>🌟 成长小宠物 · 豪华版 🌟</h1>
 
-<div class="pet" id="pet">🐰</div>
+<div class="pet-area" id="pet">🥚</div>
 
-<div class="bar"><div class="fill" id="exp"></div></div>
-<div class="bar"><div class="fill" id="food"></div></div>
+<!-- 状态条区域 -->
+<div class="stat-label">🍎 饱食度</div>
+<div class="stat-bar"><div class="stat-fill" id="food-fill" style="width:50%"></div></div>
 
-<button onclick="task()">✅ 完成成长任务</button>
-<button onclick="feed()">🍎 喂养宠物</button>
+<div class="stat-label">😄 心情值</div>
+<div class="stat-bar"><div class="stat-fill" id="mood-fill" style="width:50%"></div></div>
+
+<div class="stat-label">✨ 清洁度</div>
+<div class="stat-bar"><div class="stat-fill" id="clean-fill" style="width:50%"></div></div>
+
+<!-- 任务卡片区域 -->
+<h2 style="color:#FF6600; margin-top: 40px;">📝 今日成长任务</h2>
+<div class="tasks-area" id="tasks-container">
+    <!-- JS 动态生成任务卡片 -->
+</div>
+
+<!-- 图鉴区域 -->
+<div class="dex-area">
+    <div class="dex-title">📖 宠物图鉴</div>
+    <div class="pets-dex" id="pets-dex">
+        <!-- JS 动态生成图鉴 -->
+    </div>
+</div>
 
 <script>
-let exp = 0, food = 0;
+// ==================== 核心数据结构 ====================
+let stats = {
+    food: 50,  // 饱食度
+    mood: 50,  // 心情
+    clean: 50  // 清洁度
+};
 
-function task() {
-    exp++;
-    update();
-    speak("真棒！");
+// 宠物进化形态 (图鉴)
+const petDex = [
+    { id: 'egg', emoji: '🥚', name: '神秘蛋', condition: () => true }, // 初始状态
+    { id: 'cat', emoji: '😼', name: '乖巧猫', condition: () => stats.clean > 70 && stats.food > 50 },
+    { id: 'dog', emoji: '🐶', name: '快乐汪', condition: () => stats.mood > 70 },
+    { id: 'pig', emoji: '🐷', name: '贪吃猪', condition: () => stats.food > 80 && stats.clean < 40 },
+    { id: 'bear', emoji: '🐻', name: '强壮熊', condition: () => stats.food > 60 && stats.mood > 60 }
+];
+
+// 任务池
+const taskPool = [
+    { icon: '🍚', text: '好好吃早餐', effect: () => stats.food += 20 },
+    { icon: '🪥', text: '认真刷牙', effect: () => stats.clean += 25 },
+    { icon: '🧸', text: '收拾玩具', effect: () => stats.mood += 15 },
+    { icon: '📚', text: '阅读绘本', effect: () => stats.mood += 10, stats.clean += 5 },
+    { icon: '🏃', text: '户外运动', effect: () => stats.mood += 25, stats.food -= 10 },
+    { icon: '🛁', text: '洗个澡', effect: () => stats.clean = 100 }
+];
+
+// ==================== UI 更新逻辑 ====================
+function updateUI() {
+    // 更新状态条
+    document.getElementById('food-fill').style.width = clamp(stats.food) + '%';
+    document.getElementById('mood-fill').style.width = clamp(stats.mood) + '%';
+    document.getElementById('clean-fill').style.width = clamp(stats.clean) + '%';
+
+    // 更新宠物形态
+    updatePetForm();
+    // 更新图鉴
+    updateDex();
 }
 
-function feed() {
-    food++;
-    update();
-    speak("宠物吃饱啦！");
+function clamp(value) {
+    return Math.max(0, Math.min(100, value));
 }
 
-function update() {
-    document.getElementById("exp").style.width = exp * 10 + "%";
-    document.getElementById("food").style.width = food * 10 + "%";
-
-    if (exp >= 5) {
-        document.getElementById("pet").innerText = "🦊";
-        speak("宠物进化了！");
+// 宠物进化逻辑
+function updatePetForm() {
+    let currentPet = '🥚'; // 默认是蛋
+    // 倒序遍历，让高级形态优先判断
+    for (let i = petDex.length - 1; i >= 0; i--) {
+        if (petDex[i].condition()) {
+            currentPet = petDex[i].emoji;
+            break;
+        }
     }
+    document.getElementById('pet').innerText = currentPet;
 }
 
+// 图鉴更新逻辑
+function updateDex() {
+    petDex.forEach(pet => {
+        const el = document.getElementById(`dex-${pet.id}`);
+        if (el && pet.condition()) {
+            el.classList.add('unlocked');
+        }
+    });
+}
+
+// ==================== 任务系统 ====================
+function generateTasks() {
+    const container = document.getElementById('tasks-container');
+    container.innerHTML = ''; // 清空旧任务
+
+    // 随机选取3个任务
+    const shuffledTasks = taskPool.sort(() => 0.5 - Math.random()).slice(0, 3);
+
+    shuffledTasks.forEach(task => {
+        const card = document.createElement('div');
+        card.className = 'task-card';
+        card.innerHTML = `
+            <div class="task-icon">${task.icon}</div>
+            <div class="task-text">${task.text}</div>
+        `;
+        card.onclick = () => completeTask(task, card);
+        container.appendChild(card);
+    });
+}
+
+function completeTask(task, element) {
+    // 应用任务效果
+    task.effect();
+    // 视觉反馈
+    element.style.transform = 'scale(0.9)';
+    element.style.opacity = '0.5';
+    element.style.pointerEvents = 'none'; // 防止重复点击
+    
+    speak(`任务完成！${task.text}！`);
+    updateUI();
+}
+
+// ==================== 初始化 ====================
+function initGame() {
+    // 生成图鉴
+    const dexContainer = document.getElementById('pets-dex');
+    petDex.forEach(pet => {
+        const span = document.createElement('span');
+        span.className = 'pet-icon';
+        span.id = `dex-${pet.id}`;
+        span.innerText = pet.emoji;
+        span.title = pet.name;
+        dexContainer.appendChild(span);
+    });
+
+    generateTasks();
+    updateUI();
+}
+
+// 语音播报
 function speak(text) {
     if ("speechSynthesis" in window) {
         const msg = new SpeechSynthesisUtterance(text);
@@ -92,6 +278,9 @@ function speak(text) {
         speechSynthesis.speak(msg);
     }
 }
+
+// 页面加载完成后初始化
+window.onload = initGame;
 </script>
 
 </body>
