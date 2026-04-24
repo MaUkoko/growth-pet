@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>成长小宠物</title>
+
+<style>
+    body {
+        font-family: "Comic Sans MS", sans-serif;
+        background: #FFF6E5;
+        text-align: center;
+        padding: 20px;
+    }
+
+    h1 {
+        color: #FF6600;
+        font-size: 30px;
+    }
+
+    .pet {
+        font-size: 100px;
+        margin: 20px;
+    }
+
+    button {
+        font-size: 24px;
+        padding: 15px;
+        margin: 10px;
+        border-radius: 20px;
+        border: none;
+        background: #FFD580;
+    }
+
+    .bar {
+        width: 80%;
+        height: 30px;
+        background: #DDD;
+        border-radius: 15px;
+        margin: 15px auto;
+    }
+
+    .fill {
+        height: 100%;
+        border-radius: 15px;
+        background: linear-gradient(90deg,#FFB347,#FFCC33);
+    }
+</style>
+</head>
+
+<body>
+
+<h1>🌟 成长小宠物 🌟</h1>
+
+<div class="pet" id="pet">🐰</div>
+
+<div class="bar"><div class="fill" id="exp"></div></div>
+<div class="bar"><div class="fill" id="food"></div></div>
+
+<button onclick="task()">✅ 完成成长任务</button>
+<button onclick="feed()">🍎 喂养宠物</button>
+
+<script>
+let exp = 0, food = 0;
+
+function task() {
+    exp++;
+    update();
+    speak("真棒！");
+}
+
+function feed() {
+    food++;
+    update();
+    speak("宠物吃饱啦！");
+}
+
+function update() {
+    document.getElementById("exp").style.width = exp * 10 + "%";
+    document.getElementById("food").style.width = food * 10 + "%";
+
+    if (exp >= 5) {
+        document.getElementById("pet").innerText = "🦊";
+        speak("宠物进化了！");
+    }
+}
+
+function speak(text) {
+    if ("speechSynthesis" in window) {
+        const msg = new SpeechSynthesisUtterance(text);
+        msg.lang = "zh-CN";
+        speechSynthesis.speak(msg);
+    }
+}
+</script>
+
+</body>
+</html>
